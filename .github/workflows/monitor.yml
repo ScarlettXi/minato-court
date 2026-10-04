@@ -1,0 +1,66 @@
+name: Availability monitor
+
+on:
+  workflow_dispatch:
+    inputs:
+      write:
+        description: Write verified results (may send configured email notifications)
+        type: boolean
+        default: false
+      clear_block:
+        description: Clear an official-service block after manual investigation; do not scan
+        type: choice
+        options: [none, tokyo, minato]
+        default: none
+  schedule:
+    - cron: '2-57/5 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: availability-monitor
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    # Forks and new clones remain inactive until explicitly configured.
+    if: >-
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'workflow_dispatch' || vars.MONITOR_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MONITOR_SITE_ORIGIN: ${{ secrets.MONITOR_SITE_ORIGIN }}
+      MONITOR_INGEST_KEY: ${{ secrets.MONITOR_INGEST_KEY }}
+      MONITOR_USER_ID: ${{ vars.MONITOR_USER_ID || 'owner' }}
+      MONITOR_DAYS: ${{ vars.MONITOR_DAYS || '7' }}
+      WRITE_RESULTS: ${{ github.event_name == 'schedule' || inputs.write }}
+      CLEAR_BLOCK: ${{ inputs.clear_block || 'none' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore official-service circuit breaker
+        uses: actions/cache/restore@v4
+        with:
+          path: .monitor-state.json
+          key: monitor-state-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: monitor-state-v1-
+      - name: Scan public calendars
+        shell: bash
+        run: |
+          if [[ "$CLEAR_BLOCK" != "none" ]]; then
+            python3 monitor/scanner.py --clear-block "$CLEAR_BLOCK"
+          elif [[ "$WRITE_RESULTS" == "true" ]]; then
+            python3 monitor/scanner.py --days "$MONITOR_DAYS" --write
+          else
+            python3 monitor/scanner.py --days "$MONITOR_DAYS"
+          fi
+      - name: Save circuit breaker even when a scan fails
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .monitor-state.json
+          key: monitor-state-v1-${{ github.run_id }}-${{ github.run_attempt }}
