@@ -20,7 +20,7 @@ test("catalog covers official Tokyo ward options and excludes Tama", () => {
   }
   assert.equal(actual.filter(court => court.officialParkId === "1315").length, 2);
   assert.equal(actual.find(court => court.key === "ariake_indoor").indoor, true);
-  assert.equal(courtCatalog.filter(court => court.key === "azabu").length, 1);
+  assert.equal(courtCatalog.filter(court => court.key === "azabu").length, 0);
 });
 
 test("whole-area and individual selections preserve other areas and reject invalid saves", () => {
