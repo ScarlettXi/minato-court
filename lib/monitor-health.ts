@@ -1,5 +1,6 @@
+import { parseScanWindow, type ScanWindow } from "./scan-window";
 export const STALE_AFTER_MS = 10 * 60 * 1000;
-export type CourtHealth = { lastSuccessAt: string | null; consecutiveFailures: number; status: string };
+export type CourtHealth = { lastSuccessAt: string | null; consecutiveFailures: number; status: string; scanWindow?: ScanWindow };
 export type MonitorHealth = {
   reportedAt?: string;
   lastEndToEndSuccessAt: string | null;
@@ -30,7 +31,8 @@ export function cleanHealth(value: unknown, selected: string[], now = Date.now()
     if (!Number.isInteger(failures) || Number(failures) < 0 || Number(failures) > 1_000_000) throw new Error("Invalid failure count");
     const status = String(row.status);
     if (!["healthy", "ok", "error", "failed", "blocked", "pending", "unknown", "paused", "stale", "partial"].includes(status)) throw new Error("Invalid court status");
-    perCourt[key] = { lastSuccessAt: instant(row.lastSuccessAt, now), consecutiveFailures: Number(failures), status };
+    perCourt[key] = { lastSuccessAt: instant(row.lastSuccessAt, now), consecutiveFailures: Number(failures), status,
+      ...(row.scanWindow === undefined ? {} : { scanWindow: parseScanWindow(row.scanWindow) }) };
   }
   const blocks = Array.isArray(input.officialBlocks) ? input.officialBlocks : Object.keys(input.officialBlocks || {});
   const status = String(input.status || "unknown");
@@ -57,4 +59,16 @@ export function courtFreshness(health: MonitorHealth | null | undefined, key: st
 export async function readHealth(db: D1Database, userId: string): Promise<MonitorHealth | null> {
   const row = await db.prepare("SELECT reported_at,payload FROM monitor_health WHERE user_id=?").bind(userId).first<{reported_at:string;payload:string}>();
   return row ? { ...JSON.parse(row.payload), reportedAt: row.reported_at } : null;
+}
+
+// Freshness belongs to each observation, not just the most recent scan of its court.
+export function slotIsFresh(slot: Record<string, unknown>, health: MonitorHealth | null | undefined,
+  courtStatus: string, now = Date.now()): boolean {
+  if (courtStatus !== "healthy") return false;
+  const window = health?.perCourt[String(slot.court_key)]?.scanWindow;
+  if (window && (String(slot.slot_date) < window.startDate || String(slot.slot_date) > window.endDate
+    || slot.reservation_type !== "first_come")) return false;
+  const raw = String(slot.last_seen_at ?? "");
+  const timestamp = Date.parse(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(raw) ? raw.replace(" ", "T") + "Z" : raw);
+  return Number.isFinite(timestamp) && timestamp <= now + 60_000 && now - timestamp <= STALE_AFTER_MS;
 }

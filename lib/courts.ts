@@ -2,7 +2,7 @@
 // Evidence: data/official-tennis-catalog.json (2026-09-22).
 export const catalogCheckedAt = "2026-09-22";
 export const tokyoBookingUrl = "https://kouen.sports.metro.tokyo.lg.jp/web/";
-export const defaultCourtKeys = ["shiba", "hibiya", "azabu", "ariake_indoor"];
+export const defaultCourtKeys = ["shiba", "hibiya", "ariake_indoor"];
 export type Court = { key: string; name: string; en: string; jp: string; regionKey: string; system: "tokyo" | "minato"; surface: "hard" | "turf"; indoor: boolean; officialParkId: string | null; sportValue: string | null };
 export const regions = [
   {
@@ -114,18 +114,6 @@ export const courtCatalog: Court[] = [
     "indoor": false,
     "officialParkId": "1010",
     "sportValue": "1000_1030"
-  },
-  {
-    "key": "azabu",
-    "name": "麻布运动场",
-    "en": "Azabu Sports Field",
-    "jp": "港区立麻布運動場",
-    "regionKey": "minato",
-    "system": "minato",
-    "surface": "turf",
-    "indoor": false,
-    "officialParkId": null,
-    "sportValue": null
   },
   {
     "key": "higashi_shirahige",
@@ -405,7 +393,7 @@ export const courtCatalog: Court[] = [
   }
 ];
 // Retained only to remove retired selections and preferences from saved settings.
-export const retiredCourtKeys = ["musashino_chuo","koganei","inokashira","nogawa","fuchunomori","higashiyamato_minami"];
+export const retiredCourtKeys = ["azabu","musashino_chuo","koganei","inokashira","nogawa","fuchunomori","higashiyamato_minami"];
 export const courtByKey = new Map(courtCatalog.map(court => [court.key, court]));
 export const catalogTranslations = Object.fromEntries([...regions, ...courtCatalog].map(item => [item.name, { en: item.en, ja: item.jp }]));
 export const metropolitanOptionCount = courtCatalog.filter(court => court.system === "tokyo").length;
