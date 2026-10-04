@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787050094398,
+      "tag": "0000_conscious_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787050110226,
+      "tag": "0001_lethal_the_spike",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787102482470,
+      "tag": "0002_cuddly_mandroid",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790057046116,
+      "tag": "0003_third_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790058072303,
+      "tag": "0004_lame_triton",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790059723208,
+      "tag": "0005_special_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1790946607481,
+      "tag": "0006_faulty_changeling",
+      "breakpoints": true
+    }
+  ]
+}
