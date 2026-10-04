@@ -1,0 +1,193 @@
+{
+  "checkedAt": "2026-09-22",
+  "source": "https://kouen.sports.metro.tokyo.lg.jp/web/",
+  "regionSource": "https://kouen.sports.metro.tokyo.lg.jp/web/rsvWTransInstListAction.do",
+  "entries": [
+    {
+      "name": "大井ふ頭海浜公園Ａ",
+      "value": "1310",
+      "sportValue": "1000_1020",
+      "region": "品川区"
+    },
+    {
+      "name": "大井ふ頭海浜公園Ｂ",
+      "value": "1315",
+      "sportValue": "1000_1020",
+      "region": "品川区"
+    },
+    {
+      "name": "有明テニスＡ屋外ハードコート",
+      "value": "1350",
+      "sportValue": "1000_1020",
+      "region": "江東区"
+    },
+    {
+      "name": "有明テニスＢインドアコート",
+      "value": "1370",
+      "sportValue": "1000_1020",
+      "region": "江東区"
+    },
+    {
+      "name": "日比谷公園",
+      "value": "1000",
+      "sportValue": "1000_1030",
+      "region": "千代田区"
+    },
+    {
+      "name": "芝公園",
+      "value": "1010",
+      "sportValue": "1000_1030",
+      "region": "港区"
+    },
+    {
+      "name": "猿江恩賜公園",
+      "value": "1040",
+      "sportValue": "1000_1030",
+      "region": "江東区"
+    },
+    {
+      "name": "亀戸中央公園",
+      "value": "1050",
+      "sportValue": "1000_1030",
+      "region": "江東区"
+    },
+    {
+      "name": "木場公園",
+      "value": "1060",
+      "sportValue": "1000_1030",
+      "region": "江東区"
+    },
+    {
+      "name": "祖師谷公園",
+      "value": "1070",
+      "sportValue": "1000_1030",
+      "region": "世田谷区"
+    },
+    {
+      "name": "東白鬚公園",
+      "value": "1090",
+      "sportValue": "1000_1030",
+      "region": "墨田区"
+    },
+    {
+      "name": "浮間公園",
+      "value": "1100",
+      "sportValue": "1000_1030",
+      "region": "板橋区"
+    },
+    {
+      "name": "城北中央公園",
+      "value": "1110",
+      "sportValue": "1000_1030",
+      "region": "練馬区"
+    },
+    {
+      "name": "赤塚公園",
+      "value": "1120",
+      "sportValue": "1000_1030",
+      "region": "板橋区"
+    },
+    {
+      "name": "東綾瀬公園",
+      "value": "1130",
+      "sportValue": "1000_1030",
+      "region": "足立区"
+    },
+    {
+      "name": "舎人公園",
+      "value": "1140",
+      "sportValue": "1000_1030",
+      "region": "足立区"
+    },
+    {
+      "name": "篠崎公園Ａ",
+      "value": "1150",
+      "sportValue": "1000_1030",
+      "region": "江戸川区"
+    },
+    {
+      "name": "大島小松川公園",
+      "value": "1160",
+      "sportValue": "1000_1030",
+      "region": "江東区"
+    },
+    {
+      "name": "汐入公園",
+      "value": "1170",
+      "sportValue": "1000_1030",
+      "region": "荒川区"
+    },
+    {
+      "name": "高井戸公園",
+      "value": "1175",
+      "sportValue": "1000_1030",
+      "region": "杉並区"
+    },
+    {
+      "name": "善福寺川緑地",
+      "value": "1180",
+      "sportValue": "1000_1030",
+      "region": "杉並区"
+    },
+    {
+      "name": "光が丘公園",
+      "value": "1190",
+      "sportValue": "1000_1030",
+      "region": "練馬区"
+    },
+    {
+      "name": "石神井公園Ｂ",
+      "value": "1205",
+      "sportValue": "1000_1030",
+      "region": "練馬区"
+    },
+    {
+      "name": "井の頭恩賜公園",
+      "value": "1220",
+      "sportValue": "1000_1030",
+      "region": "三鷹市"
+    },
+    {
+      "name": "武蔵野中央公園",
+      "value": "1230",
+      "sportValue": "1000_1030",
+      "region": "武蔵野市"
+    },
+    {
+      "name": "小金井公園",
+      "value": "1240",
+      "sportValue": "1000_1030",
+      "region": "武蔵野市"
+    },
+    {
+      "name": "野川公園",
+      "value": "1260",
+      "sportValue": "1000_1030",
+      "region": "三鷹市"
+    },
+    {
+      "name": "府中の森公園",
+      "value": "1270",
+      "sportValue": "1000_1030",
+      "region": "府中市"
+    },
+    {
+      "name": "東大和南公園",
+      "value": "1280",
+      "sportValue": "1000_1030",
+      "region": "東大和市"
+    },
+    {
+      "name": "大井ふ頭海浜公園Ｂ",
+      "value": "1315",
+      "sportValue": "1000_1030",
+      "region": "品川区"
+    },
+    {
+      "name": "有明テニスＣ人工芝コート",
+      "value": "1360",
+      "sportValue": "1000_1030",
+      "region": "江東区"
+    }
+  ]
+}
