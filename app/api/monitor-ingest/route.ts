@@ -1,3 +1,5 @@
+import { readHealth } from "../../../lib/monitor-health";
+import { parseScanWindow, type ScanWindow } from "../../../lib/scan-window";
 import { ensureDefaultSettings, getMonitorKey, getTennisDb, isIsoDate, jsonError, OWNER_ID } from "../../../db/tennis";
 
 import { slotEmailStatement, sendQueuedEmails } from "../../../lib/notifications";
@@ -51,6 +53,8 @@ export async function GET(request: Request) {
     const preferences = await db.prepare("SELECT notification_channel FROM app_users WHERE id=?").bind(userId).first<{notification_channel:string}>();
     return Response.json({
       userId,
+      protocolVersion: 2,
+      health: await readHealth(db, userId),
       notificationChannel:preferences?.notification_channel ?? (userId === OWNER_ID ? "push" : "none"),
       settings:continuousSettings(settings),
       selectedCourtKeys: selectedCourtKeys(settings?.selected_court_keys),
@@ -77,15 +81,22 @@ export async function POST(request: Request) {
       slots?: Array<Record<string, unknown>>;
       bookingUpdates?: Array<Record<string, unknown>>;
       runMessage?: string;
+      scanWindow?: unknown;
     };
     if (!Array.isArray(body.checkedCourts ?? []) || !Array.isArray(body.slots ?? [])) return jsonError("Invalid monitoring result", 400);
     if ((body.slots?.length ?? 0) > 5000) return jsonError("Send complete results for fewer courts per request", 413);
+    let scanWindow: ScanWindow | undefined;
+    if (body.scanWindow !== undefined) {
+      try { scanWindow = parseScanWindow(body.scanWindow); }
+      catch { return jsonError("Invalid scan window", 400); }
+    }
     const db = getTennisDb();
     const userId = await monitorUser(db, body.userId);
     if (!userId) return jsonError("Unknown monitoring account",404);
     if (userId !== OWNER_ID && body.bookingUpdates?.length) return jsonError("Booking assistance is available only for the private owner account",403);
     await ensureDefaultSettings(db,userId);
     const settings = await db.prepare("SELECT * FROM watch_settings WHERE user_id=?").bind(userId).first();
+    if (scanWindow && settings?.active !== 1) return jsonError("Monitoring is paused", 409);
     const selected = selectedCourtKeys(settings?.selected_court_keys);
     const checked = [...new Set(body.checkedCourts ?? [])].filter(key => selected.includes(key));
     const slots = body.slots ?? [];
@@ -97,6 +108,8 @@ export async function POST(request: Request) {
       if (!isIsoDate(slotDate) || typeof startTime !== "string" || typeof endTime !== "string"
         || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime)
         || startTime >= endTime || typeof sourceUrl !== "string" || !sourceUrl.startsWith("https://")) return jsonError("Invalid slot in complete court result", 400);
+      if (scanWindow && (String(slotDate) < scanWindow.startDate || String(slotDate) > scanWindow.endDate
+        || item.reservationType !== "first_come")) return jsonError("Slot outside first-come scan window", 400);
       if (slotMatchesSettings({ court_key:courtKey, slot_date:slotDate, start_time:startTime, end_time:endTime }, settings)) accepted.push(item);
     }
 
@@ -105,9 +118,14 @@ export async function POST(request: Request) {
     const fresh = accepted.filter(slot => !previous.has([slot.courtKey,slot.slotDate,slot.startTime,slot.endTime,slot.reservationType === "lottery" ? "lottery" : "first_come"].join("|")));
     const writes = [];
     for (const courtKey of checked) {
-      writes.push(db.prepare(`UPDATE availability_slots SET status='expired'
-        WHERE user_id=? AND court_key=? AND status IN ('available','lottery_open')`)
-        .bind(userId, courtKey));
+      writes.push(scanWindow
+        ? db.prepare(`UPDATE availability_slots SET status='expired'
+            WHERE user_id=? AND court_key=? AND reservation_type='first_come'
+            AND slot_date BETWEEN ? AND ? AND status='available'`)
+            .bind(userId, courtKey, scanWindow.startDate, scanWindow.endDate)
+        : db.prepare(`UPDATE availability_slots SET status='expired'
+            WHERE user_id=? AND court_key=? AND status IN ('available','lottery_open')`)
+            .bind(userId, courtKey));
     }
 
     for (const item of accepted) {
