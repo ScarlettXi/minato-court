@@ -9,7 +9,7 @@ export const watchSettings = sqliteTable("watch_settings", {
   outdoorEnd: text("outdoor_end").notNull().default("21:00"),
   ariakeAllDay: integer("ariake_all_day", { mode: "boolean" }).notNull().default(true),
   active: integer("active", { mode: "boolean" }).notNull().default(false),
-  selectedCourtKeys: text("selected_court_keys").notNull().default('["shiba","hibiya","azabu","ariake_indoor"]'),
+  selectedCourtKeys: text("selected_court_keys").notNull().default('["shiba","hibiya","ariake_indoor"]'),
   courtTimeRanges: text("court_time_ranges").notNull().default('{}'),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
