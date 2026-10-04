@@ -14,8 +14,8 @@
 - 提供邮件/手机验证码登录接口及邮件发件队列；需要自行配置服务商。
 - 保留人工确认预约的流程和官方预约入口。
 
-**项目包含网页、后台 API、数据库结构和测试。官方预约网站的扫描程序、定时调度、
-私人登录会话及生产数据库不在此仓库中。下载或部署网页不会自动开始监控。**
+**项目包含网页、后台 API、数据库、公开空位扫描程序、GitHub Actions 定时运行配置和测试。
+部署者需要配置自己的网站地址和密钥并启用任务，才会开始监控。私人会话及生产数据不在仓库中。**
 仪表盘刷新读取已保存的结果，不等于重新扫描官网。可预约状态以官网当前结果为准。
 
 ## 技术与结构
@@ -31,7 +31,9 @@ drizzle/                 SQL 迁移，不含用户数据
 worker/                  Worker 入口
 .openai/hosting.json      通用 Sites 存储绑定配置，不含生产项目 ID
 tests/                   离线逻辑与构建产物测试
-docs/                    账户和通知配置说明
+monitor/                 Python 只读扫描程序与离线测试
+.github/workflows/       代码检查与可选定时扫描
+docs/                    账户、通知与扫描部署说明
 ```
 
 ## 本地运行
@@ -86,16 +88,20 @@ npm test
 
 ## 接入监控程序
 
-自行运行的扫描程序应仅使用自己获准访问的官方预约系统和账户。
+仓库自带 Python 3.9+ 标准库扫描程序，默认只检查公开先到先得空位，
+日期范围为日本时间当天起 7 天（可配置 14、21、28 天）。无需官方账号登录。
+芝公园、日比谷公园和有明室内场已进行公开读取验证；目录中的其他场地使用同一适配器，
+尚未全部逐一现场验证。麻布运动场已从目录、默认选择和监控目标中移除。
 
-1. 使用 `x-monitor-key` 请求头访问 `GET /api/monitor-ingest`，读取监控条件。
-2. 实际检查用户选择的球场与开放日期。
-3. 将核实的结果提交到 `POST /api/monitor-ingest`。
-4. 将扫描健康信息提交到 `POST /api/monitor-health`。
-5. 为该程序单独配置定时运行、失败处理与通知。
+```bash
+# 配好自己部署的 MONITOR_SITE_ORIGIN、MONITOR_INGEST_KEY 后：
+python3 monitor/scanner.py            # 先只读验证
+python3 monitor/scanner.py --write    # 回写核实结果；可能触发已配置的邮件提醒
+```
 
-只有成功检查的球场才能加入 `checkedCourts`。超时、登录失败和验证码应保留为未验证，
-不能当作“没有空位”。健康状态的服务器接收时间，也不代表扫描已经成功。
+按 [扫描与定时运行指南](docs/monitor-setup.md) 设置 GitHub Secrets，
+先手动验证，再启用每 5 分钟的定时任务。任务默认关闭，GitHub 调度可能延迟。
+失败或不完整的扫描保留旧结果；只有完整检查的日期范围会更新。
 
 ## 当前边界
 
@@ -123,8 +129,9 @@ per-court time preferences, account-scoped results, monitor ingestion endpoints,
 freshness indicators, and optional authentication/email integrations.
 
 **Included:** web application, API routes, D1 schema/migrations, public court-catalog
-snapshot, and automated tests. **Separate setup required:** an official-site scanner,
-scheduler, service accounts, authentication secrets, database and notification providers.
+snapshot, a public-calendar Python scanner, an opt-in GitHub Actions schedule, and
+automated tests. **Setup required:** your own deployment, secrets, database and
+notification providers. The schedule is disabled until explicitly enabled.
 Refreshing the dashboard only reads saved results; it does not scan booking websites.
 No private sessions, live records, production project IDs or prior Git history are included.
 
@@ -155,10 +162,11 @@ its authentication: client-controlled `oai-authenticated-user-*` headers must ne
 be accepted as verified identity. Keep `MONITOR_INGEST_KEY` server-side.
 See [SECURITY.md](SECURITY.md) and [account setup](docs/account-email-setup.md).
 
-A separately operated scanner reads preferences from `/api/monitor-ingest`, checks
-permitted official sources, posts verified observations, and reports health through
-`/api/monitor-health`. Only successfully checked courts belong in `checkedCourts`.
-Blocked or failed checks must remain unverified. Booking remains user-controlled.
+The included scanner checks public first-come calendars over a rolling 7-day window
+(14/21/28 optional), posts date-scoped observations, verifies readback and reports
+health. See [scanner setup](docs/monitor-setup.md) for local dry runs and Actions
+configuration. Failed checks remain unverified; bookings remain user-controlled.
+Azabu has been removed from the catalog, default selection and monitoring targets.
 
 ### Contributing and license
 
