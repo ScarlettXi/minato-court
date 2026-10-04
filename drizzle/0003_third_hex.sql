@@ -1,0 +1,1 @@
+ALTER TABLE `watch_settings` ADD `selected_court_keys` text DEFAULT '["shiba","hibiya","azabu","ariake_indoor"]' NOT NULL;

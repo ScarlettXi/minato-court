@@ -1,0 +1,1 @@
+ALTER TABLE `watch_settings` ADD `court_time_ranges` text DEFAULT '{}' NOT NULL;

@@ -1,0 +1,2 @@
+CREATE INDEX `idx_slots_status_date` ON `availability_slots` (`user_id`,`status`,`slot_date`);--> statement-breakpoint
+CREATE INDEX `idx_booking_requests_status` ON `booking_requests` (`user_id`,`status`,`requested_at`);
