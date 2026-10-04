@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { courtFreshness, type MonitorHealth } from "../lib/monitor-health";
+import { courtFreshness, slotIsFresh, type MonitorHealth } from "../lib/monitor-health";
 import { fetchDashboard } from "../lib/dashboard-fetch";
 import { bookingUrl, catalogCheckedAt, courtByKey, courtCatalog, courtTimeRange, metropolitanOptionCount, metropolitanVenueCount, regions, selectedCourtKeys } from "../lib/courts";
 import { RegionSelector } from "./region-selector";
@@ -149,7 +149,7 @@ export default function Home() {
 
         <section id="courts" className="courts-section">
           <div className="section-title"><div><p className="eyebrow">{t("关注场地")}</p><h2>{t("我的监控场地")}</h2><p className="selection-summary">{t("{regions} 个区域 · {courts} 个场地", { regions:String(regionCount), courts:String(courts.length) })}{selectionDirty && <span> · {t("预览未保存的选择")}</span>}</p></div><span className="privacy-pill">{t(data.account.isOwner ? "确认后才预约" : "前往官网预约")}</span></div>
-          <p className="catalog-note">{t("已导入东京23区内 {venues} 个都立场馆、{options} 个网球预约选项", { venues:String(metropolitanVenueCount), options:String(metropolitanOptionCount) })} · {t("另保留麻布运动场")}<br />{t("按官方目录的区域归类")} · {t("目录核对：{date}", { date:catalogCheckedAt })} · <a href="https://kouen.sports.metro.tokyo.lg.jp/web/" target="_blank" rel="noreferrer">{t("官方场地目录 ↗")}</a></p>
+          <p className="catalog-note">{t("已导入东京23区内 {venues} 个都立场馆、{options} 个网球预约选项", { venues:String(metropolitanVenueCount), options:String(metropolitanOptionCount) })}<br />{t("按官方目录的区域归类")} · {t("目录核对：{date}", { date:catalogCheckedAt })} · <a href="https://kouen.sports.metro.tokyo.lg.jp/web/" target="_blank" rel="noreferrer">{t("官方场地目录 ↗")}</a></p>
           {!courts.length && <div className="empty-selection">{t("从左侧区域栏选择想监控的场地")}</div>}
           <div className="court-grid">
             {courts.map((court) => {
@@ -160,6 +160,7 @@ export default function Home() {
               const tag = court.system === "minato" ? "港区区立" : court.indoor ? "都立 · 室内硬地" : court.surface === "hard" ? "都立 · 硬地" : "都立 · 人工草地";
               const run = data.runs.find((item) => item.court_key === court.key);
               const healthState = freshness(court.key);
+              const scanWindow = data.health?.perCourt[court.key]?.scanWindow;
               return <article className="court-card" key={court.key}>
                 <div className={`court-visual ${court.indoor ? "violet" : court.surface === "hard" ? "blue" : "green"}`}><span className="court-tag">{t(tag)}</span><div className="court-lines" aria-hidden="true"><i /><b /></div><span className="area-label">{t(region.name)}</span></div>
                 <div className="court-body">
@@ -167,9 +168,10 @@ export default function Home() {
                   <CourtTimeSettings courtKey={court.key} courtName={t(court.name)} language={language} range={courtTimeRange(data.settings, court.key)} disabled={loading || saving || !data.settings} onSave={range => act({ action:"save_court_time", courtKey:court.key, ...range }, "此场地的监控时段已保存")} />
                   <p className="court-rule">{t("实际开放时段以官网为准")}</p>
                   <p className={`court-health ${healthState}`}><span>{t(courtHealthCopy[healthState])}</span>{(data.health?.perCourt[court.key]?.lastSuccessAt || run?.checked_at) && <small>{t("最近检查：{time}", { time:friendlyDateTime(data.health?.perCourt[court.key]?.lastSuccessAt || run?.checked_at) })}</small>}</p>
+                  {scanWindow && <p className="court-rule">{t("已检查日期：{start} 至 {end}（先到先得）", { start:scanWindow.startDate, end:scanWindow.endDate })}</p>}
                   <div className="slot-list">
                     {slots.length ? slots.slice(0, 3).map((slot) => <div className="slot" key={String(slot.id)}>
-                      <div><strong>{friendlyDate(slot.slot_date)}</strong><span>{slot.start_time}–{slot.end_time} · {t(slot.reservation_type === "lottery" ? "抽选" : "先到先得")}</span>{healthState !== "healthy" && <small>{t("历史空位，需在官网重新确认")}</small>}</div>
+                      <div><strong>{friendlyDate(slot.slot_date)}</strong><span>{slot.start_time}–{slot.end_time} · {t(slot.reservation_type === "lottery" ? "抽选" : "先到先得")}</span>{!slotIsFresh(slot, data.health, healthState, clock) && <small>{t("历史空位，需在官网重新确认")}</small>}</div>
                       {slot.request_status ? <span className={`request-badge ${slot.request_status}`}>{t(statusCopy(slot.request_status))}</span> : data.account?.isOwner ? <button onClick={() => setConfirmSlot(slot)}>{t("确认预约")}</button> : <a className="slot-book-link" href={source} target="_blank" rel="noreferrer">{t("前往官网预约")}</a>}
                     </div>) : <div className="empty-slot"><span className={`pending-state ${healthState === "healthy" ? "checked" : ""}`}><i /> {t(!isSaved ? "保存后加入监控" : healthState === "healthy" ? "最近检查未发现空位" : "当前空位尚未确认")}</span><small>{run ? t("最近检查：{time}", { time:friendlyDateTime(run.checked_at) }) : t(court.system === "tokyo" ? "都立公园预约系统" : "港区设施预约系统")}</small></div>}
                   </div>

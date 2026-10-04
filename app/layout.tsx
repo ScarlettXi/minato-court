@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const image = `${protocol}://${host}/og.png`;
   const title = "Minato Court｜东京都网球场监控系统";
-  const description = "监控芝公园、日比谷公园、麻布运动场和有明室内场，在你确认后才提交预约。";
+  const description = "监控芝公园、日比谷公园和有明室内场，在你确认后才提交预约。";
   return {
     title,
     description,

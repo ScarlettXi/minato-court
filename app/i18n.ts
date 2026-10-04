@@ -43,6 +43,7 @@ export function saveLanguage(language: Language) {
 }
 
 const messages: Record<string, { en: string; ja: string }> = {
+  "已检查日期：{start} 至 {end}（先到先得）": { en:"Checked dates: {start} to {end} (first come)", ja:"確認対象：{start}〜{end}（先着順）" },
   "监控已暂停": {en:"Monitoring paused",ja:"監視は一時停止中"},
   "官方验证待处理": {en:"Official verification required",ja:"公式サイトでの認証が必要"},
   "部分数据待重新确认": {en:"Some data needs rechecking",ja:"一部のデータは再確認が必要"},
@@ -89,7 +90,6 @@ const messages: Record<string, { en: string; ja: string }> = {
   "{regions} 个区域 · {courts} 个场地": { en: "{regions} areas · {courts} courts", ja: "{regions}エリア・{courts}施設" },
   "预览未保存的选择": { en: "Previewing unsaved selection", ja: "未保存の選択をプレビュー" },
   "已导入东京23区内 {venues} 个都立场馆、{options} 个网球预约选项": { en: "Tokyo wards: {venues} metropolitan venues · {options} tennis booking options", ja: "東京23区内の都立{venues}施設・テニス予約区分{options}件を登録" },
-  "另保留麻布运动场": { en: "Azabu Sports Field also retained", ja: "麻布運動場も引き続き登録" },
   "按官方目录的区域归类": { en: "Areas follow the official directory", ja: "公式施設一覧の地域区分に準拠" },
   "目录核对：{date}": { en: "Directory checked: {date}", ja: "一覧確認日：{date}" },
   "官方场地目录 ↗": { en: "Official court directory ↗", ja: "公式施設一覧 ↗" },
