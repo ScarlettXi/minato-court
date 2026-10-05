@@ -1,4 +1,5 @@
 import { readHealth } from "../../../lib/monitor-health";
+import { canAccessAccount, invitationRequired } from "../../../lib/invitations";
 import { parseScanWindow, type ScanWindow } from "../../../lib/scan-window";
 import { ensureDefaultSettings, getMonitorKey, getTennisDb, isIsoDate, jsonError, OWNER_ID } from "../../../db/tennis";
 
@@ -16,7 +17,7 @@ async function monitorUser(db: D1Database, value: unknown) {
   if (value === undefined || value === null || value === OWNER_ID) return OWNER_ID;
   if (typeof value !== "string") return null;
   const row = await db.prepare("SELECT id FROM app_users WHERE id=?").bind(value).first<{ id:string }>();
-  return row?.id ?? null;
+  return row?.id && await canAccessAccount(db,row.id) ? row.id : null;
 }
 
 export async function GET(request: Request) {
@@ -26,7 +27,9 @@ export async function GET(request: Request) {
     const query = new URL(request.url).searchParams;
     if (query.get("listUsers") === "1") {
       await ensureDefaultSettings(db);
-      const users = await db.prepare("SELECT user_id FROM watch_settings WHERE active=1 AND user_id>? ORDER BY user_id LIMIT 51").bind(query.get("after") || "").all<{user_id:string}>();
+      const users = await db.prepare(`SELECT user_id FROM watch_settings WHERE active=1 AND user_id>?
+        AND (?=0 OR user_id='owner' OR EXISTS (SELECT 1 FROM site_invitations i WHERE i.used_by=watch_settings.user_id AND i.revoked_at IS NULL))
+        ORDER BY user_id LIMIT 51`).bind(query.get("after") || "",invitationRequired()?1:0).all<{user_id:string}>();
       return Response.json({ users:users.results.slice(0,50).map(row => row.user_id), next:users.results.length > 50 ? users.results[49].user_id : null }, {headers:{"cache-control":"no-store"}});
     }
     const userId = await monitorUser(db, query.get("userId"));
