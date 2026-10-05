@@ -58,7 +58,7 @@ export default function Home() {
     try {
       const response = await fetchDashboard();
       const next = await response.json() as Dashboard & { error?: string };
-      if (response.status === 401) { setData({ ...emptyDashboard, capabilities:next.capabilities ?? unavailableAuth }); return; }
+      if (response.status === 401 || response.status === 403) { setData({ ...emptyDashboard, capabilities:next.capabilities ?? unavailableAuth }); if(response.status === 403) setMessage(next.error ?? "请先登录"); return; }
       if (!response.ok) throw new Error(next.error ?? "读取失败");
       setData(next);
       setConnectionError(false);
@@ -80,7 +80,7 @@ export default function Home() {
     try {
       const response = await fetch("/api/dashboard", { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify(payload) });
       const next = await response.json() as Dashboard & { error?: string };
-      if (response.status === 401) setData({ ...emptyDashboard, capabilities:next.capabilities ?? unavailableAuth });
+      if (response.status === 401 || response.status === 403) setData({ ...emptyDashboard, capabilities:next.capabilities ?? unavailableAuth });
       if (!response.ok) throw new Error(next.error ?? "操作失败");
       setData(next); setMessage(success);
       if (payload.action === "save_courts") setDraftCourtKeys(null);

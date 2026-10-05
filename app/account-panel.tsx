@@ -3,6 +3,7 @@ import { useState } from "react";
 import { formatDateTime, translate, type Language } from "./i18n";
 import type { PublicAccount, AuthCapabilities } from "./account-types";
 import type { NotificationStatus, NotificationReceipt } from "../lib/notification-status";
+import { InvitationPanel } from "./invitation-panel";
 
 const receiptLabels:Record<NotificationReceipt["status"],string> = {
   pending:"等待发送", sending:"正在提交发送", retry:"暂未确认，将重试", sent:"邮件服务已接收",
@@ -53,6 +54,7 @@ export function AccountPanel({ account, capabilities, language, notifications, o
       {notifications?.recent.length ? <ul>{notifications.recent.map((notice,index) => <li key={`${notice.createdAt}-${index}`}><div><strong>{t(notice.kind === "test" ? "测试邮件" : "空位提醒")}</strong><time>{formatDateTime(language,notice.acceptedAt ?? notice.createdAt)}</time></div><span data-status={notice.status}>{t(receiptLabels[notice.status])}</span></li>)}</ul> : <p className="account-note">{t("暂无邮件记录")}</p>}
     </div>
     {account.isOwner && <div className="account-readiness"><h3>{t("新用户服务状态")}</h3><p className="account-note"><a href="/login">{t("查看新用户登录入口")}</a></p><ul><li>{t(capabilities.emailLogin ? "邮箱登录已配置" : "邮箱登录待开通")}</li><li>{t(capabilities.phoneLogin ? "手机登录已配置" : "手机登录待开通")}</li><li>{t(capabilities.emailDelivery ? "邮件发送已配置" : "邮件发送服务尚未开通")}</li></ul></div>}
+    {account.isOwner && <InvitationPanel capabilities={capabilities} language={language} />}
     {message && <p className="account-note" role="status">{t(message)}</p>}
   </section>;
 }
