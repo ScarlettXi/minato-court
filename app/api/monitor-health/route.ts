@@ -1,6 +1,7 @@
 import { getMonitorKey, getTennisDb, jsonError, OWNER_ID } from "../../../db/tennis";
 import { selectedCourtKeys } from "../../../lib/courts";
 import { cleanHealth } from "../../../lib/monitor-health";
+import { canAccessAccount } from "../../../lib/invitations";
 
 // Existing monitor authorization, deliberately no browser identity fallback.
 export async function POST(request: Request) {
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const userId = input.userId === undefined ? OWNER_ID : input.userId;
     if (typeof userId !== "string") return jsonError("Invalid account", 400);
     const db = getTennisDb();
+    if (!await canAccessAccount(db,userId)) return jsonError("Unknown monitoring account",404);
     const settings = await db.prepare("SELECT selected_court_keys FROM watch_settings WHERE user_id=?").bind(userId).first<{selected_court_keys:string}>();
     if (!settings) return jsonError("Unknown monitoring account", 404);
     let health;
