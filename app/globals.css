@@ -221,3 +221,18 @@ h2 { margin:0; font:500 30px/1.1 Georgia,"Songti SC",serif; letter-spacing:-.025
 .court-health.healthy { color:#377451; }
 .court-health small { color:#757c73; }
 .slot small { display:block; color:#835127; font-size:11px; }
+
+.platform-signin { display:block; margin-top:24px; padding:14px 18px; border-radius:9px; background:var(--ink); color:#fff; text-align:center; text-decoration:none; font-size:15px; font-weight:600; }
+.platform-signin:focus-visible,.setup-guide a:focus-visible { outline:2px solid #557b43; outline-offset:4px; }
+.login-methods small { display:block; margin-top:5px; font-size:11px; font-weight:400; }
+.login-card .account-note { font-size:13px; }
+.setup-guide { margin:24px 0; padding:24px; border:1px solid #cad7c9; border-radius:14px; background:#f5f8f0; }
+.setup-guide h2 { margin:0; font-size:21px; }.setup-guide p { color:#607468; font-size:13px; line-height:1.6; }
+.setup-guide ol { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; padding:0; margin:22px 0 0; list-style:none; }
+.setup-guide li { display:flex; align-items:flex-start; gap:10px; }.setup-guide li>span { display:grid; place-items:center; flex:none; width:26px; height:26px; border:1px solid #bcc9b9; border-radius:50%; font-size:12px; }
+.setup-guide li[data-complete=true]>span { background:#315d49; color:#fff; border-color:#315d49; }.setup-guide strong { font-size:14px; }.setup-guide a { font-size:12px; text-underline-offset:3px; }
+.monitor-controls { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:22px 0 0; }.monitor-controls p { font-size:12px; color:#607468; line-height:1.6; }.monitor-controls button { flex:none; }.monitor-controls button:disabled { opacity:.45; cursor:default; }
+.service-pending { padding:12px 14px; border-radius:8px; background:#f5efdf; color:#6e542b; }
+.notification-history,.account-readiness { border-top:1px solid var(--line); margin-top:24px; padding-top:20px; }.notification-history h3,.account-readiness h3 { margin:0; font-size:16px; }
+.notification-history ul { list-style:none; margin:0; padding:0; }.notification-history li { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--line); font-size:13px; }.notification-history time { display:block; margin-top:5px; font-size:12px; color:#607468; }.notification-history li>span { border-radius:6px; padding:5px 8px; background:#f1eee3; }.notification-history [data-status=sent] { background:#e6f0e4; }.notification-history [data-status=failed] { background:#f6e5e0; color:#863f2d; }.account-readiness ul { padding-left:20px; font-size:13px; color:#607468; line-height:1.9; }
+@media(max-width:700px) { .setup-guide ol { grid-template-columns:1fr; }.setup-guide { padding:20px; }.monitor-controls { align-items:flex-start; flex-direction:column; }.account-panel { padding:20px; }.login-card { padding:24px; } }

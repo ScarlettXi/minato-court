@@ -39,15 +39,17 @@ export function LoginPanel({ capabilities: initialCapabilities }: { capabilities
   return <main className="login-shell"><section className="login-card">
     <div className="login-top"><strong>MINATO COURT</strong><select aria-label={t("选择语言")} value={language} onChange={event => { if (isLanguage(event.target.value)) saveLanguage(event.target.value); }}><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option></select></div>
     <h1>{t("登录你的网球场监控台")}</h1><p>{t("你的场地、监控时段和提醒设置仅属于你的账户。")}</p>
-    <div className="login-methods"><button type="button" aria-pressed={kind === "email"} onClick={() => { setKind("email"); setIdentifier(""); setCode(""); setSent(false); setMessage(""); }}>{t("邮箱登录")}</button><button type="button" aria-pressed={kind === "phone"} onClick={() => { setKind("phone"); setIdentifier(""); setCode(""); setSent(false); setMessage(""); }}>{t("手机号登录")}</button></div>
+    <a className="platform-signin" href="/signin-with-chatgpt?return_to=%2F" target="_top">{t("使用现有 ChatGPT 账户进入")}</a>
+    <p className="account-note">{t("首次登录会建立独立账户。请使用网站已授权的账户进入。")}</p>
+    <div className="login-methods"><button type="button" aria-pressed={kind === "email"} onClick={() => { setKind("email"); setIdentifier(""); setCode(""); setSent(false); setMessage(""); }}>{t("邮箱登录")}{!capabilities.emailLogin && <small>{t("暂未开放")}</small>}</button><button type="button" aria-pressed={kind === "phone"} onClick={() => { setKind("phone"); setIdentifier(""); setCode(""); setSent(false); setMessage(""); }}>{t("手机号登录")}{!capabilities.phoneLogin && <small>{t("暂未开放")}</small>}</button></div>
     {!enabled && <p className="account-note">{t(kind === "email" ? "邮箱验证码登录尚未开放" : "手机验证码登录尚未开放")}</p>}
-    <form onSubmit={event => { event.preventDefault(); void submit(sent ? "verify_code" : "send_code"); }}>
+    {enabled && <form onSubmit={event => { event.preventDefault(); void submit(sent ? "verify_code" : "send_code"); }}>
       <label>{t(kind === "email" ? "邮箱地址" : "手机号（含国家区号）")}<input type={kind === "email" ? "email" : "tel"} autoComplete={kind === "email" ? "email" : "tel"} required value={identifier} disabled={busy || sent} placeholder={kind === "email" ? "you@example.com" : "+81…"} onChange={event => setIdentifier(event.target.value)} /></label>
       {sent && <label>{t("验证码")}<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" minLength={6} maxLength={10} value={code} required disabled={busy} onChange={event => setCode(event.target.value.replace(/\D/g,""))} /></label>}
       <button className="account-primary" disabled={!enabled || busy}>{t(busy ? "处理中…" : sent ? "验证并登录" : "发送验证码")}</button>
       {sent && <div className="login-retry"><button type="button" disabled={busy || remaining > 0} onClick={() => void submit("send_code")}>{remaining > 0 ? `${remaining}s` : t("重新发送")}</button><button type="button" disabled={busy} onClick={() => { setSent(false); setCode(""); }}>{t("更改登录信息")}</button></div>}
-    </form>
+    </form>}
     {message && <p className="account-note" role="status">{t(message)}</p>}
-    <div className="login-existing"><a href="/signin-with-chatgpt?return_to=%2F" target="_top">{t("使用现有 ChatGPT 账户进入")}</a><Link href="/" prefetch={false}>{t("返回我的监控台")}</Link></div>
+    <div className="login-existing"><Link href="/" prefetch={false}>{t("返回我的监控台")}</Link></div>
   </section></main>;
 }

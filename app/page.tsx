@@ -6,13 +6,15 @@ import { fetchDashboard } from "../lib/dashboard-fetch";
 import { bookingUrl, catalogCheckedAt, courtByKey, courtCatalog, courtTimeRange, metropolitanOptionCount, metropolitanVenueCount, regions, selectedCourtKeys } from "../lib/courts";
 import { RegionSelector } from "./region-selector";
 import { CourtTimeSettings } from "./court-time-settings";
+import { SetupGuide } from "./setup-guide";
+import type { NotificationStatus } from "../lib/notification-status";
 import { AccountPanel } from "./account-panel";
 import { LoginPanel } from "./login-panel";
 import { unavailableAuth, type PublicAccount, type AuthCapabilities } from "./account-types";
 import { formatDate, formatDateTime, isLanguage, locales, readLanguage, saveLanguage, serverLanguage, subscribeLanguage, translate } from "./i18n";
 
 type Row = Record<string, string | number | null>;
-type Dashboard = { settings: Row | null; slots: Row[]; requests: Row[]; runs: Row[]; health?:MonitorHealth | null; account:PublicAccount | null; capabilities:AuthCapabilities };
+type Dashboard = { notifications?:NotificationStatus; settings: Row | null; slots: Row[]; requests: Row[]; runs: Row[]; health?:MonitorHealth | null; account:PublicAccount | null; capabilities:AuthCapabilities };
 const emptyDashboard: Dashboard = { settings:null, slots:[], requests:[], runs:[], account:null, capabilities:unavailableAuth };
 
 
@@ -122,7 +124,7 @@ export default function Home() {
 
       <section className="content" id="dashboard">
         <header className="topbar">
-          <div className="topbar-heading"><p className="eyebrow">{t("网球场预约助手")}</p><h1>{t("东京都网球场监控系统")}</h1><p className="intro">{t(data.account.isOwner ? "持续查看你指定的球场。有空位时通知你，只有在你确认后才会提交预约。" : "选择你想监控的场地和时间，有空位时通过邮件提醒你。预约请在官网完成。")}</p></div>
+          <div className="topbar-heading"><p className="eyebrow">{t("网球场预约助手")}</p><h1>{t("东京都网球场监控系统")}</h1><p className="intro">{t(data.account.isOwner ? "持续查看你指定的球场。有空位时通知你，只有在你确认后才会提交预约。" : "选择场地和时间，查看扫描结果，并在账户中设置空位提醒。预约请在官网完成。")}</p></div>
           <div className="top-actions">
             <button className="icon-button" aria-label={t("刷新监控面板")} onClick={() => void load()}>↻<span className={data.slots.length ? "notification-dot" : ""} /></button>
             <label className="language-picker" title={t("选择语言")}>
@@ -140,6 +142,8 @@ export default function Home() {
         {message && <div className="notice" role="status"><span>{t(message)}</span><button onClick={() => setMessage("")} aria-label={t("关闭提示")}>×</button></div>}
         <div className="monitor-health" role="status"><strong>{t(connectionError ? "连接异常，正在自动重试" : healthLabel)}</strong><span>{t("临时故障自动恢复；认证、验证码与付款不自动处理。")}</span>{connectionError && <small>{t("保留上次结果，当前数据尚未重新确认。")}</small>}{["failed_or_unconfirmed","unknown"].includes(data.health?.telegramStatus ?? "") && <small>{t("通知送达尚未确认，请勿视为已送达。")}</small>}</div>
 
+        {!data.account.isOwner && <SetupGuide account={data.account} capabilities={data.capabilities} language={language} hasCourts={savedCourtKeys.length > 0} active={active} scanned={healthStates.length > 0 && healthStates.every(state => state === "healthy")} />}
+        <div className="monitor-controls"><p>{t(active ? "监控条件已保存，实际运行以扫描记录为准。" : "监控已暂停，重新启用后等待下一次扫描。")}</p><button className="account-secondary" disabled={saving || !savedCourtKeys.length} onClick={() => void act({action:"save_settings",active:!active}, active ? "监控已暂停" : "监控已启用，等待扫描")}>{t(active ? "暂停监控" : "启用监控")}</button></div>
         <section className={`status-grid${data.account.isOwner ? "" : " personal-status"}`} aria-label={t("监控状态")}>
           <article className="metric-card primary"><span>{t("已保存的监控场地")}</span><strong>{savedCourtKeys.length} <small>/ {courtCatalog.length}</small></strong><p>{t(active ? "持续监控 · 无结束日期" : "选择并保存场地后持续监控")}</p></article>
           <article className="metric-card"><span>{t("可预约空位")}</span><strong>{loading ? "…" : data.slots.length}</strong><p>{t(data.slots.length ? "打开场地卡片即可确认" : "尚未发现符合条件的时段")}</p></article>
@@ -181,7 +185,7 @@ export default function Home() {
           </div>
         </section>
 
-        <AccountPanel account={data.account} capabilities={data.capabilities} language={language} onAccount={account => setData(current => ({ ...current, account }))} />
+        <AccountPanel account={data.account} capabilities={data.capabilities} language={language} notifications={data.notifications} onNotifications={notifications => setData(current => ({ ...current, notifications }))} onAccount={account => setData(current => ({ ...current, account }))} />
 
         {data.account.isOwner && <section className="requests-section" id="requests">
           <div className="section-title"><div><p className="eyebrow">{t("预约请求")}</p><h2>{t("预约记录")}</h2></div><span className="latest-check">{t("最近扫描：{time}", { time:latestRun })}</span></div>

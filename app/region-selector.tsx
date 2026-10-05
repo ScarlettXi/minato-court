@@ -17,7 +17,7 @@ type Props = {
 export function RegionSelector({ language, selected, disabled, dirty, onChange, onSave, onReset }: Props) {
   const [expanded, setExpanded] = useState<string[]>([]);
   const t = (source: string, values?: Record<string, string>) => translate(language, source, values);
-  return <section className="region-selector" aria-labelledby="region-title">
+  return <section id="monitor-preferences" className="region-selector" aria-labelledby="region-title">
     <div className="region-title-row"><h2 id="region-title">{t("监控区域")}</h2><span>{t("已选 {count}", { count:String(selected.length) })}</span></div>
     <p className="region-help">{t("勾选整区，或展开选择场地")}</p>
     <div className="region-bulk"><button disabled={disabled} onClick={() => onChange(courtCatalog.map(court => court.key))}>{t("全选")}</button><button disabled={disabled} onClick={() => onChange([])}>{t("清空选择")}</button></div>
