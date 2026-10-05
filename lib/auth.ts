@@ -1,5 +1,6 @@
 import { getTennisDb, runtimeEnv } from "../db/tennis";
 import { publicAccount, resolveAccount, type Account, type VerifiedIdentity } from "./accounts";
+import { admitAccount, canAccessAccount, invitationRequired } from "./invitations";
 
 export class AuthError extends Error {
   status: number;
@@ -13,7 +14,7 @@ const siteOrigin = "https://minato-court.example";
 export function authCapabilities() {
   const env = runtimeEnv();
   const configured = Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY);
-  return { emailLogin:configured, phoneLogin:configured && env.PHONE_LOGIN_ENABLED === "true",
+  return { inviteOnly:invitationRequired(), emailLogin:configured, phoneLogin:configured && !invitationRequired() && env.PHONE_LOGIN_ENABLED === "true",
     emailDelivery:Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL) };
 }
 
@@ -72,23 +73,29 @@ export async function authContext(request: Request): Promise<AuthContext> {
     }
     if (!response?.ok) throw new AuthError("登录已过期，请重新登录");
     const identity = providerIdentity(await response.json() as ProviderUser);
-    return { account:await resolveAccount(db, identity), cookieHeaders, accessToken };
+    const account = await resolveAccount(db, identity);
+    if (!await canAccessAccount(db,account.id)) throw new AuthError("请使用有效邀请码加入，或联系站点所有者恢复访问",403);
+    return { account, cookieHeaders, accessToken };
   }
   // These headers are authenticated and injected by the Sites dispatcher.
   const id = request.headers.get("oai-authenticated-user-id");
   const email = request.headers.get("oai-authenticated-user-email");
   if (!id || !email) throw new AuthError("请先登录");
   const identity: VerifiedIdentity = { provider:"chatgpt", id, email, phone:null, emailVerified:true };
-  return { account:await resolveAccount(db, identity, runtimeEnv().OWNER_BOOTSTRAP_EMAIL), cookieHeaders };
+  const account = await resolveAccount(db, identity, runtimeEnv().OWNER_BOOTSTRAP_EMAIL);
+  if (!await canAccessAccount(db,account.id)) throw new AuthError("请使用邮箱和邀请码加入本站",403);
+  return { account, cookieHeaders };
 }
 
-export async function acceptSession(request: Request, session: ProviderSession, expectedUserId?: string) {
+export async function acceptSession(request: Request, session: ProviderSession, expectedUserId?: string, invitationCode?:unknown, expectedEmail?:string) {
   if (!session.access_token || !session.refresh_token) throw new AuthError("验证码无效或已过期", 400);
   const verified = await providerRequest("/user", "GET", undefined, session.access_token);
   if (!verified.ok) throw new AuthError("登录验证失败");
   const identity = providerIdentity(await verified.json() as ProviderUser);
   if (expectedUserId && identity.id !== expectedUserId) throw new AuthError("邮箱不属于当前账户", 403);
+  if (expectedEmail && identity.email?.toLowerCase() !== expectedEmail.toLowerCase()) throw new AuthError("邮箱不属于当前账户",403);
   const account = await resolveAccount(getTennisDb(), identity);
+  if (!await admitAccount(getTennisDb(),account,invitationCode)) throw new AuthError("邀请码无效、已使用或已过期",403);
   return { account, cookieHeaders:sessionCookies(request, session), accessToken:session.access_token };
 }
 

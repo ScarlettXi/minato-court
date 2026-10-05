@@ -1,6 +1,7 @@
 import { runtimeEnv, type RuntimeEnv } from "../db/tennis";
 import type { Account } from "./accounts";
 import { courtByKey } from "./courts";
+import { canAccessAccount } from "./invitations";
 
 type Notice = { id:string; user_id:string; event_key:string; recipient:string; subject:string; body:string; attempts:number; created_at:string };
 
@@ -12,6 +13,7 @@ export async function enqueueEmail(db: D1Database, account: Account, eventKey: s
 }
 
 export async function slotEmailStatement(db: D1Database, userId: string, slots: Array<Record<string, unknown>>) {
+  if (!await canAccessAccount(db,userId)) return null;
   const origin = runtimeEnv().SITE_ORIGIN || "http://localhost:3000";
   const account = await db.prepare("SELECT * FROM app_users WHERE id=? AND notification_channel='email' AND email_verified=1").bind(userId).first<Account>();
   if (!account?.email || !slots.length) return null;
@@ -33,13 +35,14 @@ export async function sendQueuedEmails(db: D1Database, userId: string, config: R
   if (!config.RESEND_API_KEY || !config.RESEND_FROM_EMAIL) return { sent:0, pending:true };
   const now = Math.floor(Date.now() / 1000);
   const account = await db.prepare("SELECT * FROM app_users WHERE id=?").bind(userId).first<Account>();
+  const accessAllowed = await canAccessAccount(db,userId);
   const notices = await db.prepare(`SELECT * FROM email_notifications WHERE user_id=?
     AND status IN ('pending','retry','sending') AND available_at<=? AND attempts<5 ORDER BY created_at LIMIT 5`)
     .bind(userId, now).all<Notice>();
   let sent = 0;
   for (const notice of notices.results) {
     const isTest = notice.event_key.startsWith("test:");
-    if (!account?.email_verified || account.email !== notice.recipient || (!isTest && account.notification_channel !== "email")) {
+    if (!accessAllowed || !account?.email_verified || account.email !== notice.recipient || (!isTest && account.notification_channel !== "email")) {
       await db.prepare("UPDATE email_notifications SET status='cancelled' WHERE id=? AND user_id=?").bind(notice.id, userId).run();
       continue;
     }
