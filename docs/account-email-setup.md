@@ -71,3 +71,20 @@ Before admitting new users:
 5. Confirm an ordinary user has a recent successful scan and an availability email accepted by the provider, then confirm receipt in that user's inbox. Mocked unit tests do not replace this live check.
 
 Additional local checks: `node --test tests/auth-mail.test.mjs tests/onboarding-render.test.mjs`. These use an in-memory database and simulated email transport. No real email is sent.
+
+## Invitation-only email accounts
+
+Set `INVITE_ONLY=true` to require an invitation for non-owner accounts. The site owner still signs in through the existing ChatGPT identity. Friends sign in with an email OTP and do not need ChatGPT accounts. In this mode, phone sign-in is disabled.
+
+The owner can create one-person invitations from Account & notifications after the email provider is configured. Each code has 128 bits of randomness, expires after seven days if unused, and is shown only on creation. The database stores only its SHA-256 hash. Share the login URL and code privately; the application does not automatically send invitation messages.
+
+The code is claimed atomically only after Supabase has verified the friend's email. The first successful claim grants that account access. Subsequent sign-ins use the same email without a new code. Every dashboard and account request rechecks membership. Revocation stops access for existing sessions, pauses that membership's monitoring, excludes it from scanner enumeration, and prevents queued email delivery. History is preserved. An owner can issue a new invitation to restore a friend's access.
+
+To activate this for people without ChatGPT accounts:
+
+1. Configure Supabase email OTP and custom SMTP. Keep email verification required; never grant membership from an unverified form field or user metadata.
+2. Configure the verified Resend sender for availability notifications. Test actual OTP and reminder receipt with authorized test addresses.
+3. Keep the Sites audience private while preparing. The current platform access gate requires ChatGPT before the app loads. Once email authentication and invitation enforcement are verified, the owner must authorize making the login page reachable without the platform gate. A public login page must still return no private dashboard data to anonymous or uninvited visitors.
+4. Verify a newly invited ordinary account, a refused account without an invitation, a used/expired invitation, and a revoked session. Then verify that the multi-user scanner processes the new member's selected courts.
+
+`node --test tests/invitations.test.mjs` uses simulated provider responses and an in-memory database. It validates the access controls, not live email delivery or the platform's external audience configuration.
