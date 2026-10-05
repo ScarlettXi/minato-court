@@ -1,10 +1,11 @@
+import { readNotificationStatus } from "../../../lib/notification-status";
 import { accountView, authCapabilities, authContext, authFailure, authJson, requireSameOrigin, type AuthContext } from "../../../lib/auth";
 import { ensureDefaultSettings, getTennisDb } from "../../../db/tennis";
 import { continuousSettings, courtByKey, selectedCourtKeys, slotMatchesSettings, validCourtSelection, validCourtTimeRange } from "../../../lib/courts";
 import { readHealth } from "../../../lib/monitor-health";
 
 async function readDashboard(db: D1Database, userId: string) {
-  const [settings, slots, requests, runs, health] = await Promise.all([
+  const [settings, slots, requests, runs, health, notifications] = await Promise.all([
     db.prepare("SELECT * FROM watch_settings WHERE user_id = ?").bind(userId).first(),
     db.prepare(`SELECT s.*, r.status AS request_status, r.id AS request_id
       FROM availability_slots s
@@ -17,9 +18,10 @@ async function readDashboard(db: D1Database, userId: string) {
       WHERE r.user_id = ? ORDER BY r.requested_at DESC LIMIT 30`).bind(userId).all(),
     db.prepare("SELECT * FROM monitor_runs WHERE user_id=? ORDER BY checked_at DESC").bind(userId).all(),
     readHealth(db, userId),
+    readNotificationStatus(db, userId),
   ]);
   const selected = selectedCourtKeys(settings?.selected_court_keys);
-  return { settings:continuousSettings(settings), health, slots: slots.results.filter(slot => slotMatchesSettings(slot, settings)), requests: requests.results, runs: runs.results.filter(run => selected.includes(String(run.court_key))) };
+  return { settings:continuousSettings(settings), health, notifications, slots: slots.results.filter(slot => slotMatchesSettings(slot, settings)), requests: requests.results, runs: runs.results.filter(run => selected.includes(String(run.court_key))) };
 }
 
 export async function GET(request: Request) {
