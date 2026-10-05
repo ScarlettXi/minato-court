@@ -28,7 +28,7 @@ export async function slotEmailStatement(db: D1Database, userId: string, slots: 
   const body = `你关注的场地出现了 ${slots.length} 个新时段（日本时间）。\n\n${lines.join("\n")}\n${slots.length > 100 ? "其余时段请在监控面板查看。\n" : ""}\n查看你的监控面板和官方预约入口：${origin}\n\n空位可能变化，请以官网当前状态为准。此邮件不会自动提交预约。\n管理或关闭邮件提醒：${origin}/#account`;
   return db.prepare(`INSERT INTO email_notifications(id,user_id,event_key,recipient,subject,body)
     VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,event_key) DO NOTHING`)
-    .bind(crypto.randomUUID(), userId, eventKey, account.email, `Minato Court｜发现 ${slots.length} 个新时段`, body);
+    .bind(crypto.randomUUID(), userId, eventKey, account.email, `Tokyo Court｜发现 ${slots.length} 个新时段`, body);
 }
 
 export async function sendQueuedEmails(db: D1Database, userId: string, config: RuntimeEnv = runtimeEnv(), transport: typeof fetch = fetch) {

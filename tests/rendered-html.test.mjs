@@ -14,7 +14,7 @@ test("renders the account gate without leaking owner dashboard data", async () =
   const response = await render();
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /<title>Minato Court/);
+  assert.match(html, /<title>Tokyo Court/);
   assert.match(html, /正在读取你的账户/);
   assert.doesNotMatch(html, /request-table|confirm-modal|owner@example|test-owner/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/);

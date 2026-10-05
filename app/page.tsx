@@ -49,7 +49,7 @@ export default function Home() {
 
   useEffect(() => {
     document.documentElement.lang = locales[language];
-    document.title = `Minato Court｜${translate(language, "东京都网球场监控系统")}`;
+    document.title = `Tokyo Court｜${translate(language, "东京都网球场监控系统")}`;
   }, [language]);
 
   const load = useCallback(async () => {
@@ -111,7 +111,7 @@ export default function Home() {
   return (
     <main className="site-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark" aria-hidden="true">M</span><div><strong>MINATO COURT</strong><small>{t("私人网球场助手")}</small></div></div>
+        <div className="brand"><span className="brand-mark" aria-hidden="true">T</span><div><strong>TOKYO COURT</strong><small>{t("私人网球场助手")}</small></div></div>
         <nav aria-label={t("主导航")}>
           <a className="nav-item active" href="#dashboard"><span>⌂</span>{t("监控总览")}</a>
           <a className="nav-item" href="#courts"><span>◎</span>{t("我的场地")}</a>

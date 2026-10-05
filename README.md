@@ -1,4 +1,4 @@
-# Minato Court · 东京都网球场监控面板
+# Tokyo Court · 东京都网球场监控面板
 
 [English](#english) · [MIT License](LICENSE)
 
@@ -125,7 +125,7 @@ Cookie、密钥、真实预约记录或个人信息。参见 [CONTRIBUTING.md](C
 
 ## English
 
-Minato Court is a Tokyo tennis-court availability dashboard initiated by ScarlettXi
+Tokyo Court is a Tokyo tennis-court availability dashboard initiated by ScarlettXi
 and developed with AI assistance. It provides Chinese, English and Japanese UI,
 per-court time preferences, account-scoped results, monitor ingestion endpoints,
 freshness indicators, and optional authentication/email integrations.

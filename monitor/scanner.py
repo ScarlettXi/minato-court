@@ -48,7 +48,7 @@ class Transport:
         time.sleep(max(0, self.delay - (time.monotonic() - self.last)))
         self.last = time.monotonic()
         request = urllib.request.Request(url, data=data, headers={
-            'User-Agent': 'MinatoCourt/0.1 (public availability monitor)', **(headers or {})})
+            'User-Agent': 'TokyoCourt/0.1 (public availability monitor)', **(headers or {})})
         try:
             with self.opener.open(request, timeout=20) as response:
                 raw = response.read(2_000_001)

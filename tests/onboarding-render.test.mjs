@@ -59,5 +59,5 @@ if(process.env.ONBOARDING_PREVIEW_DIR){
   const body=render(SetupGuide,{...props,hasCourts:true,active:true,scanned:false})+render(AccountPanel,props);
   writeFileSync(dir+'/login.html','<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>邮箱邀请登录 · 本地演示</title><style>'+readFileSync(new URL('../app/globals.css',import.meta.url),'utf8')+'</style><p style="text-align:center">本地界面预览 · 邮件服务配置后的样式</p>'+render(LoginPanel,{capabilities:{emailLogin:true,emailDelivery:true,phoneLogin:false,inviteOnly:true}})+'</html>');
   const css=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
-  writeFileSync(dir+'/index.html','<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Minato Court · 本地演示</title><style>'+css+'body{background:#f7f6f1}main{max-width:1040px;margin:30px auto;padding:0 20px}</style><main><p>本地预览 · 演示账户</p>'+body+'</main></html>');
+  writeFileSync(dir+'/index.html','<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tokyo Court · 本地演示</title><style>'+css+'body{background:#f7f6f1}main{max-width:1040px;margin:30px auto;padding:0 20px}</style><main><p>本地预览 · 演示账户</p>'+body+'</main></html>');
 }

@@ -1,4 +1,4 @@
-# Minato Court monitoring reliability
+# Tokyo Court monitoring reliability
 
 The included runner and schedule are documented in [scanner setup](docs/monitor-setup.md).
 Cloning or deploying the web app does not enable the schedule. Configure your own
