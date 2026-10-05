@@ -80,9 +80,11 @@ npm test
 | `OWNER_BOOTSTRAP_EMAIL` | 用于绑定初始 owner 数据的已验证 Sites 账户邮箱 |
 | `SUPABASE_URL`、`SUPABASE_ANON_KEY` | 可选的邮箱/手机号验证码认证服务 |
 | `PHONE_LOGIN_ENABLED` | 配置短信服务后才设为 `true` |
+| `INVITE_ONLY` | 设为 `true` 后，朋友首次邮箱登录须使用站点所有者生成的一次性邀请码 |
 | `RESEND_API_KEY`、`RESEND_FROM_EMAIL` | 可选邮件提醒服务及已验证发件地址 |
 
 认证细节与通知配置见 [账户与邮件说明](docs/account-email-setup.md)。
+邀请码默认七天有效，领取后可用原邮箱继续登录，所有者可撤销访问。朋友无需 ChatGPT 账户的前提是已接通邮箱验证码服务，并经所有者批准解除 Sites 外层访问限制；仅部署这段代码不会自动完成服务配置或开放站点。
 **在 Sites 以外部署时，必须先替换或验证身份接入层。当前代码信任 Sites 网关注入的身份头，
 不可将可伪造该请求头的裸 Worker 直接开放给公众。** 参见 [安全说明](SECURITY.md)。
 

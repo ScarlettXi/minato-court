@@ -12,7 +12,7 @@
     "test": "npm run test:unit && npm run test:scanner && npm run build && npm run test:render",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test:unit": "node --test tests/court-catalog.test.mjs tests/auth-mail.test.mjs tests/monitor-health.test.mjs tests/monitor-ingest.test.mjs tests/onboarding-render.test.mjs",
+    "test:unit": "node --test tests/court-catalog.test.mjs tests/auth-mail.test.mjs tests/invitations.test.mjs tests/monitor-health.test.mjs tests/monitor-ingest.test.mjs tests/onboarding-render.test.mjs",
     "test:render": "node --test tests/rendered-html.test.mjs",
     "typecheck": "tsc --noEmit",
     "test:scanner": "python3 -m unittest discover -s monitor -p 'test_*.py'"
