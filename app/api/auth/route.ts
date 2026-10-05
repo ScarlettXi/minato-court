@@ -1,4 +1,6 @@
 import { acceptSession, accountView, AuthError, authCapabilities, authContext, authFailure, authJson, providerRequest, rateLimit, requireSameOrigin, sessionCookies, type AuthContext } from "../../../lib/auth";
+import { getTennisDb } from "../../../db/tennis";
+import { canRequestEmailCode } from "../../../lib/invitations";
 
 export async function GET(request: Request) {
   try {
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
     const identity = body.kind === "phone" ? { phone:identifier } : { email:identifier };
     if (body.action === "send_code") {
       await rateLimit(request, "send-code", identifier, 1, 60);
+      if (capabilities.inviteOnly && !await canRequestEmailCode(getTennisDb(),identifier,body.invitationCode)) throw new AuthError("首次使用需要有效邀请码；已加入的用户请使用原邮箱",403);
       const response = await providerRequest("/otp", "POST", { ...identity, create_user:true, ...(body.kind === "phone" ? { channel:"sms" } : {}) });
       if (!response.ok) throw new AuthError(response.status === 429 ? "操作太频繁，请稍后重试" : "验证码发送失败，请稍后重试", response.status === 429 ? 429 : 400);
       return authJson({ ok:true });
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
     await rateLimit(request, "verify-code", identifier, 10, 600);
     const response = await providerRequest("/verify", "POST", { ...identity, type:body.kind === "phone" ? "sms" : "email", token:body.code });
     if (!response.ok) throw new AuthError("验证码无效或已过期", 400);
-    const context = await acceptSession(request, await response.json());
+    const context = await acceptSession(request, await response.json(),undefined,body.invitationCode,body.kind === "email" ? identifier : undefined);
     return authJson({ account:accountView(context) }, context);
   } catch (error) { return authFailure(error, currentContext); }
 }
