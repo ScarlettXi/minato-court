@@ -9,7 +9,8 @@ export const watchSettings = sqliteTable("watch_settings", {
   outdoorEnd: text("outdoor_end").notNull().default("21:00"),
   ariakeAllDay: integer("ariake_all_day", { mode: "boolean" }).notNull().default(true),
   active: integer("active", { mode: "boolean" }).notNull().default(false),
-  selectedCourtKeys: text("selected_court_keys").notNull().default('["shiba","hibiya","ariake_indoor"]'),
+  // Preserve the database default; ensureDefaultSettings always supplies current selections.
+  selectedCourtKeys: text("selected_court_keys").notNull().default('["shiba","hibiya","azabu","ariake_indoor"]'),
   courtTimeRanges: text("court_time_ranges").notNull().default('{}'),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
@@ -86,6 +87,20 @@ export const authRateLimits = sqliteTable("auth_rate_limits", {
   windowStart: integer("window_start").notNull(),
   attempts: integer("attempts").notNull(),
 });
+
+export const siteInvitations = sqliteTable("site_invitations", {
+  id: text("id").primaryKey(),
+  tokenHash: text("token_hash").notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: integer("expires_at").notNull(),
+  usedBy: text("used_by"),
+  usedAt: text("used_at"),
+  revokedAt: text("revoked_at"),
+}, table => [
+  uniqueIndex("idx_invitation_hash").on(table.tokenHash),
+  index("idx_invitation_member").on(table.usedBy, table.revokedAt),
+]);
 
 export const emailNotifications = sqliteTable("email_notifications", {
   id: text("id").primaryKey(),

@@ -7,6 +7,7 @@ export type RuntimeEnv = {
   DB?: D1Database; MONITOR_INGEST_KEY?: string; OWNER_BOOTSTRAP_EMAIL?: string;
   SUPABASE_URL?: string; SUPABASE_ANON_KEY?: string; PHONE_LOGIN_ENABLED?: string;
   RESEND_API_KEY?: string; RESEND_FROM_EMAIL?: string; SITE_ORIGIN?: string;
+  INVITE_ONLY?: string;
 };
 export function runtimeEnv(): RuntimeEnv { return env as unknown as RuntimeEnv; }
 
