@@ -53,3 +53,21 @@ Sources: https://resend.com/docs/api-reference/emails/send-email , https://resen
 `RUN_LOCAL_TENANT_TESTS=1 node tests/tenant-api.test.mjs` targets only `http://localhost:3000`, expects the local test environment, exercises actual APIs with two users, and restores local database contents. It is not a production test and sends no real messages.
 
 Real login, SMS delivery and inbox receipt must be verified after the service accounts and sending domain are configured. Do not report mocked tests as live delivery.
+
+## New-user readiness and operational checks
+
+The dashboard now separates saved preferences from actual scan health. The setup guide asks users to choose courts and hours, configure an alert address, then verify a recent successful scan. Saving settings alone is not proof that a worker is processing that account. Pausing monitoring only updates the authenticated account.
+
+The login page prioritizes the existing ChatGPT sign-in and hides OTP forms when the corresponding provider is unavailable. The email notification option and test-send button are disabled until email delivery is configured; the API also rejects email selection with HTTP 503 while unavailable, preserving the user's current choice.
+
+Each user can view the last five email status records for their current verified address. Records expose type, timestamps and queue state, never another account's messages, recipients, bodies or provider IDs. "Accepted by mail service" means provider acceptance only, not delivery to an inbox.
+
+Before admitting new users:
+
+1. Decide who may access the site. The current owner-only Sites access gate prevents other people from reaching the app, even if Supabase is configured. Apply the owner's chosen audience explicitly.
+2. For invited ChatGPT users, platform sign-in can supply identity; a separate OTP provider is optional. For independent email-code sign-in, configure Supabase and custom SMTP, and deploy the environment changes.
+3. Configure a verified Resend sender and test receipt using a user-authorized destination. Do not mark email delivery verified based only on environment-key presence or mocked tests.
+4. Verify that the active scanner actually enumerates new users, reads their selected courts and hours, and writes back to the same user ID. Do not start a second scanner for the existing owner accidentally.
+5. Confirm an ordinary user has a recent successful scan and an availability email accepted by the provider, then confirm receipt in that user's inbox. Mocked unit tests do not replace this live check.
+
+Additional local checks: `node --test tests/auth-mail.test.mjs tests/onboarding-render.test.mjs`. These use an in-memory database and simulated email transport. No real email is sent.
